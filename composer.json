@@ -1,0 +1,7 @@
+{
+    "require": {
+        "facebook/php-business-sdk": "^8.0.3",
+        "facebook/graph-sdk": "^5.1",
+        "vlucas/phpdotenv": "^5.5"
+    }
+}
