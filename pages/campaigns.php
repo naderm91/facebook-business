@@ -1,5 +1,4 @@
 <?php
-
 $campaigns = getAllCampaigns(
     $_ENV['APP_ID'],
     $_ENV['APP_SECRET'],
