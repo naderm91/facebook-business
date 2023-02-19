@@ -2,8 +2,11 @@
 
 use FacebookAds\Api;
 use Facebook\Facebook;
+use FacebookAds\Object\AbstractArchivableCrudObject;
 use FacebookAds\Object\AdAccount;
 use FacebookAds\Logger\CurlLogger;
+use FacebookAds\Object\AdSet;
+use FacebookAds\Object\Fields\AdSetFields;
 use FacebookAds\Object\ProductCatalog;
 use FacebookAds\Object\Fields\AdFields;
 use Facebook\Exceptions\FacebookSDKException;
@@ -12,6 +15,9 @@ use Facebook\Exceptions\FacebookResponseException;
 use FacebookAds\Object\Fields\ProductCatalogFields;
 use FacebookAds\Object\Values\CampaignBidStrategyValues;
 use FacebookAds\Object\Values\AdSetOptimizationGoalValues;
+use FacebookAds\Object\Fields\TargetingFields;
+use FacebookAds\Object\Values\AdSetBillingEventValues;
+use FacebookAds\Object\Targeting;
 
 function dd(...$args)
 {
@@ -36,23 +42,20 @@ function scopes()
  *
  * @param string $app_id
  * @param string $redirect_uri
- * @return string
+ * @return void
  */
-function requestAuth(string $app_id, string $redirect_uri): string
+function requestAuth($app_id, $redirect_uri)
 {
-    return 'https://www.facebook.com/v15.0/dialog/oauth?' .
+    $url = 'https://www.facebook.com/v15.0/dialog/oauth?' .
         http_build_query(array(
             'client_id' => $app_id,
             'redirect_uri' => $redirect_uri,
             'scope' => implode(',', scopes()),
-            )
-        )
-    ;
+        ));
+
+    return $url;
 }
 
-/**
- * @throws Exception
- */
 function getAccessToken($app_id, $app_secret, $redirect_uri, $code)
 {
     // Exchange the authorization code for an access token
@@ -62,8 +65,7 @@ function getAccessToken($app_id, $app_secret, $redirect_uri, $code)
             'redirect_uri' => $redirect_uri,
             'client_secret' => $app_secret,
             'code' => $code,
-        ))
-    ;
+        ));
 
     $response = file_get_contents($token_url);
     $params = json_decode($response, true);
@@ -216,35 +218,12 @@ function getAllCampaigns($app_id, $app_secret, $access_token, $id)
 /**
  * @throws FacebookSDKException
  */
-function createCampaign($app_id, $app_secret, $access_token, $id, $pixel_id, $product_catalog_id, $product_set_id, $page_id)
+function createCampaign(
+    $app_id, $app_secret, $access_token, $id, $pixel_id, $product_catalog_id, $product_set_id, $page_id)
 {
     $api = Api::init($app_id, $app_secret, $access_token);
     $api->setDefaultGraphVersion('15.0');
     $api->setLogger(new CurlLogger());
-
-    # Create ad creative object
-    $fb = new Facebook([
-        'app_id' => $app_id,
-        'app_secret' => $app_secret,
-        'default_access_token' => $access_token,
-        'default_graph_version' => 'v15.0',
-    ]);
-
-    try {
-        $response = $fb->get("/$id/adcreatives", [
-            'page_id' => $page_id
-        ]);
-
-//        dd($response);
-        $result = $response->getDecodedBody();
-        $creative = $result['data'];
-    } catch (FacebookResponseException $e) {
-        echo 'Graph returned an error: ' . $e->getMessage();
-        exit;
-    } catch (FacebookSDKException $e) {
-        echo 'Facebook SDK returned an error: ' . $e->getMessage();
-        exit;
-    }
 
     $account = new AdAccount($id);
 
@@ -263,72 +242,51 @@ function createCampaign($app_id, $app_secret, $access_token, $id, $pixel_id, $pr
         )
     )->exportAllData();
 
-
-    # Create adset
-    $adset = $account->createAdSet(
-        array(),
-        array(
+    $adset = $account->createAdSet(array(), array(
             'name' => 'Catalog Sales Campaign Adset',
+            //            'optimization_goal' => AdSetOptimizationGoalValues::LINK_CLICKS, // 'OFFSITE_CONVERSIONS',
+            'optimization_goal' => 'REACH',
+            'billing_event' => 'IMPRESSIONS',
             'campaign_id' => $campaign['id'],
             // 'daily_budget' => '1000',
             // 'bid_amount' => '2',
-            'billing_event' => 'IMPRESSIONS',
-            'optimization_goal' => AdSetOptimizationGoalValues::LINK_CLICKS, // 'OFFSITE_CONVERSIONS',
-            'end_time' => '2023-01-25T22:17:28-0800',
+            'status' => 'PAUSED',
+            'end_time' => '2023-02-20T15:41:30+0000',
+            'targeting' => array(
+//                'age_min' => 20,
+//                'age_max' => 24,
+//                'genders' => array(1),
+                'geo_locations' => array('countries' => array('SA'))
+            ),
             'promoted_object' => array(
                 // 'pixel_id' => $pixel_id,
                 // 'custom_event_type' => 'CONTENT_VIEW',
                 'product_set_id' => $product_set_id,
             ),
-            'targeting' => array(
-                'age_min' => 20,
-                'age_max' => 24,
-                'genders' => array(1),
-                'geo_locations' => array('countries' => array('SA'))
-            ),
-            'status' => 'PAUSED',
-        )
-    )->exportAllData();
+        ))->exportAllData();
+    # Create adset
+    //Campaign Id :23853505779060149
 
-    return;
+    $data = json_decode(file_get_contents("json/adcreative.json"), TRUE);
+    $creative = $account->createAdCreative(array(),  $data)->exportAllData();
 
-    # Create ad creative object
-    $fb = new Facebook([
-        'app_id' => $app_id,
-        'app_secret' => $app_secret,
-        'default_access_token' => $access_token,
-        'default_graph_version' => 'v15.0',
-    ]);
-
+    //todo
     try {
-        $response = $fb->post("/$id/adcreatives", [
-            'page_id' => $page_id
-        ]);
 
-        $result = $response->getDecodedBody();
-        $creative = $result['data'];
-    } catch (FacebookResponseException $e) {
+//        $data = json_decode(file_get_contents("json/ad.json"), TRUE);
+//        $account->setData($data);
+//        $ad = $account->createAd();
+    } catch (\Facebook\Exceptions\FacebookResponseException $e) {
+        // When Graph returns an error
         echo 'Graph returned an error: ' . $e->getMessage();
-        exit;
-    } catch (FacebookSDKException $e) {
+    } catch (\Facebook\Exceptions\FacebookSDKException $e) {
+        // When validation fails or other local issues
         echo 'Facebook SDK returned an error: ' . $e->getMessage();
-        exit;
     }
-
-    # Create ad
-    $ad = $account->createAd([], [
-        AdFields::NAME => 'DPA Test Ad 1 ',
-        AdFields::ADSET_ID => $adset['id'],
-        AdFields::CREATIVE => array(
-            'creative_id' => $creative['id']
-        )
-    ])->exportAllData();
+    die;
 }
 
-/**
- * @throws FacebookSDKException
- */
-function getBusinesses($app_id, $app_secret, $access_token): array
+function getBusinesses($app_id, $app_secret, $access_token)
 {
     $result = [];
     $fb = new Facebook([

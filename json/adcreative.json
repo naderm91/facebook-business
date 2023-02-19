@@ -1,0 +1,11 @@
+{
+  "name":"Sample Creative",
+  "object_story_spec":{
+    "page_id": "100801666077008",
+    "link_data": {
+      "call_to_action": {"type":"SIGN_UP","value":{"link":"https://etr-dev.live/"}},
+      "link": "https://etr-dev.live/",
+      "message": "try it out"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name":"My Ad Set",
+  "optimization_goal":"REACH" ,
+  "billing_event":"IMPRESSIONS",
+  "campaign_id":"23853505779060149" ,
+  "status":"PAUSED",
+  "targeting":{"geo_locations":{"countries":["US"]}},
+  "end_time":"2023-09-21T15:41:30+0000"
+}
