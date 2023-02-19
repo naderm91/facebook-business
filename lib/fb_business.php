@@ -219,7 +219,7 @@ function getAllCampaigns($app_id, $app_secret, $access_token, $id)
  * @throws FacebookSDKException
  */
 function createCampaign(
-    $app_id, $app_secret, $access_token, $id, $pixel_id, $product_catalog_id, $product_set_id, $page_id)
+    $app_id, $app_secret, $access_token, $id, $pixel_id, $product_catalog_id, $product_set_id, $page_id): void
 {
     $api = Api::init($app_id, $app_secret, $access_token);
     $api->setDefaultGraphVersion('15.0');
@@ -244,11 +244,11 @@ function createCampaign(
 
     $adset = $account->createAdSet(array(), array(
             'name' => 'Catalog Sales Campaign Adset',
-            //            'optimization_goal' => AdSetOptimizationGoalValues::LINK_CLICKS, // 'OFFSITE_CONVERSIONS',
-            'optimization_goal' => 'REACH',
+        'optimization_goal' => AdSetOptimizationGoalValues::LINK_CLICKS, // 'OFFSITE_CONVERSIONS',
+//            'optimization_goal' => 'REACH',
             'billing_event' => 'IMPRESSIONS',
             'campaign_id' => $campaign['id'],
-            // 'daily_budget' => '1000',
+//             'daily_budget' => '1000',
             // 'bid_amount' => '2',
             'status' => 'PAUSED',
             'end_time' => '2023-02-20T15:41:30+0000',
@@ -268,14 +268,21 @@ function createCampaign(
     //Campaign Id :23853505779060149
 
     $data = json_decode(file_get_contents("json/adcreative.json"), TRUE);
+    $data['object_story_spec']['page_id'] = $page_id;
     $creative = $account->createAdCreative(array(),  $data)->exportAllData();
 
-    //todo
     try {
 
-//        $data = json_decode(file_get_contents("json/ad.json"), TRUE);
+        //todo add payment method to complete this action
+        $params = json_decode(file_get_contents("json/ad.json"), TRUE);
 //        $account->setData($data);
-//        $ad = $account->createAd();
+        $params['adset_id'] = $adset['id'];
+        $params['creative']['creative_id'] = $creative['id'];
+
+        $res = (new AdAccount($id))->createAd(
+            array(),
+            $params
+        )->exportAllData();
     } catch (\Facebook\Exceptions\FacebookResponseException $e) {
         // When Graph returns an error
         echo 'Graph returned an error: ' . $e->getMessage();
@@ -283,7 +290,6 @@ function createCampaign(
         // When validation fails or other local issues
         echo 'Facebook SDK returned an error: ' . $e->getMessage();
     }
-    die;
 }
 
 function getBusinesses($app_id, $app_secret, $access_token)
@@ -313,6 +319,9 @@ function getBusinesses($app_id, $app_secret, $access_token)
     return $result;
 }
 
+/**
+ * @throws FacebookSDKException
+ */
 function getBusinessOwnedPages($app_id, $app_secret, $access_token, $business_id)
 {
     $result = [];
@@ -323,8 +332,9 @@ function getBusinessOwnedPages($app_id, $app_secret, $access_token, $business_id
         'default_graph_version' => 'v15.0',
     ]);
     try {
-        $response = $fb->get('/' . $business_id . '/owned_pages?fields=name,id');
+        $response = $fb->get('me/accounts?fields=name,id');
         $pages = $response->getGraphEdge();
+
         if (!empty($pages)) {
             foreach ($pages as $page) {
                 $result[] = $page->asArray();
