@@ -1,0 +1,9 @@
+{
+  "name": "Product Catalog Sales Campaign",
+  "objective": "PRODUCT_CATALOG_SALES",
+  "promoted_object": {
+    "product_catalog_id": "731774561889799"
+  },
+  "special_ad_categories": "[]",
+  "status": "PAUSED"
+}

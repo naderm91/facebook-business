@@ -1,11 +1,14 @@
 {
-  "name":"Sample Creative",
-  "object_story_spec":{
+  "name": "Advantage Catalog Ads Template Creative Sample",
+  "object_story_spec": {
     "page_id": "112594431752932",
-    "link_data": {
-      "call_to_action": {"type":"SHOP_NOW"},
+    "template_data": {
+      "description": "Description {{product.description}}",
       "link": "https://etr-dev.live/",
-      "message": "try it out"
+      "message": "Test {{product.name | titleize}}",
+      "name": "Headline {{product.price}}"
     }
-  }
+  },
+  "product_set_id": "1664396597328705",
+  "instagram_actor_id": "6115579621826318"
 }

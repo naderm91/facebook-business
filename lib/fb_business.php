@@ -1,5 +1,6 @@
 <?php
 
+use Facebook\GraphNodes\GraphNodeFactory;
 use FacebookAds\Api;
 use Facebook\Facebook;
 use FacebookAds\Object\AbstractArchivableCrudObject;
@@ -218,8 +219,7 @@ function getAllCampaigns($app_id, $app_secret, $access_token, $id)
 /**
  * @throws FacebookSDKException
  */
-function createCampaign(
-    $app_id, $app_secret, $access_token, $id, $pixel_id, $product_catalog_id, $product_set_id, $page_id): void
+function createCampaign($app_id, $app_secret, $access_token, $id, $pixel_id, $product_catalog_id, $product_set_id, $page_id,$instagram_actor_id): void
 {
     $api = Api::init($app_id, $app_secret, $access_token);
     $api->setDefaultGraphVersion('15.0');
@@ -233,29 +233,29 @@ function createCampaign(
         array(
             CampaignFields::NAME => 'Catalog Sales Campaign',
             CampaignFields::OBJECTIVE => 'PRODUCT_CATALOG_SALES', // 'CONVERSIONS', // PRODUCT_CATALOG_SALES
-            'status' => 'PAUSED',
-            'pacing_type' => array('standard'),
-            'lifetime_budget' => 350 * 100,
-            'bid_strategy' => CampaignBidStrategyValues::LOWEST_COST_WITHOUT_CAP,
+            //'bid_strategy' => CampaignBidStrategyValues::LOWEST_COST_WITHOUT_CAP,
+            CampaignFields::PROMOTED_OBJECT => array('product_catalog_id' => $product_catalog_id),
             'special_ad_categories' => array(),
-            CampaignFields::PROMOTED_OBJECT => array('product_catalog_id' => $product_catalog_id)
+            'status' => 'PAUSED',
+//            'pacing_type' => array('standard'),
+//            'lifetime_budget' => 350 * 100,
         )
     )->exportAllData();
 
-    $adset = $account->createAdSet(array(), array(
+    # Create adset
+    $adset = $account->createAdSet(array(),
+        array(
             'name' => 'Catalog Sales Campaign Adset',
-        'optimization_goal' => AdSetOptimizationGoalValues::LINK_CLICKS, // 'OFFSITE_CONVERSIONS',
-//            'optimization_goal' => 'REACH',
+            'bid_amount' => '2',
             'billing_event' => 'IMPRESSIONS',
+            'optimization_goal' => AdSetOptimizationGoalValues::OFFSITE_CONVERSIONS, // 'LINK_CLICKS' // REACH,
+            'daily_budget' => '15000',
             'campaign_id' => $campaign['id'],
-//             'daily_budget' => '1000',
-            // 'bid_amount' => '2',
-            'status' => 'PAUSED',
-            'end_time' => '2023-02-20T15:41:30+0000',
+            //'end_time' => '2025-02-20T15:41:30+0000',
             'targeting' => array(
-//                'age_min' => 20,
-//                'age_max' => 24,
-//                'genders' => array(1),
+                //'age_min' => 20,
+                //'age_max' => 24,
+                //'genders' => array(1),
                 'geo_locations' => array('countries' => array('SA'))
             ),
             'promoted_object' => array(
@@ -263,36 +263,40 @@ function createCampaign(
                 // 'custom_event_type' => 'CONTENT_VIEW',
                 'product_set_id' => $product_set_id,
             ),
-        ))->exportAllData();
-    # Create adset
-    //Campaign Id :23853505779060149
+            'status' => 'PAUSED',
+        )
+    )->exportAllData();
 
     $data = json_decode(file_get_contents("json/adcreative.json"), TRUE);
     $data['object_story_spec']['page_id'] = $page_id;
+    $data['product_set_id'] = $product_set_id;
+    $data['instagram_actor_id'] = $instagram_actor_id;
+    //    "link_data": {
+    //    "call_to_action": {"type":"SHOP_NOW"},
+    //      "link": "https://etr-dev.live/",
+    //      "message": "try it out"
+    //    }
     $creative = $account->createAdCreative(array(),  $data)->exportAllData();
 
     try {
-
-        //todo add payment method to complete this action
         $params = json_decode(file_get_contents("json/ad.json"), TRUE);
-//        $account->setData($data);
         $params['adset_id'] = $adset['id'];
         $params['creative']['creative_id'] = $creative['id'];
-
-        $res = (new AdAccount($id))->createAd(
-            array(),
-            $params
-        )->exportAllData();
-    } catch (\Facebook\Exceptions\FacebookResponseException $e) {
+        //  "redownload":"1" ,
+        (new AdAccount($id))->createAd(array(), $params)->exportAllData();
+    } catch (FacebookResponseException $e) {
         // When Graph returns an error
         echo 'Graph returned an error: ' . $e->getMessage();
-    } catch (\Facebook\Exceptions\FacebookSDKException $e) {
+    } catch (FacebookSDKException $e) {
         // When validation fails or other local issues
         echo 'Facebook SDK returned an error: ' . $e->getMessage();
     }
 }
 
-function getBusinesses($app_id, $app_secret, $access_token)
+/**
+ * @throws FacebookSDKException
+ */
+function getBusinesses($app_id, $app_secret, $access_token): array
 {
     $result = [];
     $fb = new Facebook([
@@ -309,10 +313,10 @@ function getBusinesses($app_id, $app_secret, $access_token)
                 $result[] = $business->asArray();
             }
         }
-    } catch (\Facebook\Exceptions\FacebookResponseException $e) {
+    } catch (FacebookResponseException $e) {
         // When Graph returns an error
         echo 'Graph returned an error: ' . $e->getMessage();
-    } catch (\Facebook\Exceptions\FacebookSDKException $e) {
+    } catch (FacebookSDKException $e) {
         // When validation fails or other local issues
         echo 'Facebook SDK returned an error: ' . $e->getMessage();
     }
@@ -352,6 +356,53 @@ function getBusinessOwnedPages($app_id, $app_secret, $access_token, $business_id
     return $result;
 }
 
+/**
+ * @throws FacebookSDKException
+ */
+function getInstagramPackedAccountID($app_id, $app_secret, $access_token)
+{
+    $result = [];
+    $fb = new Facebook([
+        'app_id' => $app_id,
+        'app_secret' => $app_secret,
+        'default_access_token' => $access_token,
+        'default_graph_version' => 'v15.0',
+    ]);
+    try {
+        // get page token
+        $response = $fb->get($_SESSION['fb_business']['page_id'].'?fields=access_token');
+        $pages= (new GraphNodeFactory($response))->makeGraphNode();
+        if (!empty($pages)) {
+            foreach ($pages as $key =>$page) {
+                $result[$key] = $page;
+            }
+        }
+        $page_access_token = $result["access_token"];
+
+        $fb = new Facebook([
+            'app_id' => $app_id,
+            'app_secret' => $app_secret,
+            'default_access_token' => $page_access_token,
+            'default_graph_version' => 'v15.0',
+        ]);
+
+        $response = $fb->get($_SESSION['fb_business']['page_id'].'/page_backed_instagram_accounts');
+        $result = getDataFromAPI($response);
+    } catch (FacebookResponseException $e) {
+        // When Graph returns an error
+        echo 'Graph returned an error: ' . $e->getMessage();
+        exit;
+    } catch (FacebookSDKException $e) {
+        // When validation fails or other local issues
+        echo 'Facebook SDK returned an error: ' . $e->getMessage();
+        exit;
+    }
+    return $result;
+}
+
+/**
+ * @throws FacebookSDKException
+ */
 function getBusinessOwnedProductCatalogs($app_id, $app_secret, $access_token, $business_id)
 {
     $result = [];
@@ -387,12 +438,22 @@ function getProductCatalogs($app_id, $app_secret, $access_token, $act_account_id
     $api->setLogger(new CurlLogger());
     $api->setDefaultGraphVersion('15.0');
     $catalog = new ProductCatalog($act_account_id,);
-    $catalogs = $catalog->getSelf(
+    return $catalog->getSelf(
         array(
             ProductCatalogFields::ID,
             ProductCatalogFields::NAME,
         )
     );
+}
 
-    return $catalogs;
+function getDataFromAPI($response): array
+{
+    $result = [];
+    $pages = $response->getGraphEdge();
+    if (!empty($pages)) {
+        foreach ($pages as $key => $page) {
+            $result[$key] = $page->asArray();
+        }
+    }
+    return $result;
 }

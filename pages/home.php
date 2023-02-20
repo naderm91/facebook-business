@@ -37,6 +37,13 @@ if ($expiration_time = validateAccessToken(
     echo "<br>";
     require_once APP_DIR . "/pages/accounts.php";
 
+    if (isset($_SESSION['fb_business']['page_id'])) {
+        echo "<br>";
+        echo "<br>";
+        echo "<strong>Instagram accounts :</strong>";
+        require_once APP_DIR . "/pages/instagram.php";
+    }
+
     if (isset($_SESSION['fb_business']['act_account_id'])) {
         echo "<br>";
         echo "<br>";

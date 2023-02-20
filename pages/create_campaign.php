@@ -1,8 +1,9 @@
 <?php
-//dd($_SESSION);
+
+use Facebook\Exceptions\FacebookSDKException;
 
 try {
-    $campaign_id = createCampaign(
+    createCampaign(
         $_ENV['APP_ID'],
         $_ENV['APP_SECRET'],
         $_SESSION['fb_business']['access_token'],
@@ -10,11 +11,9 @@ try {
         $_SESSION['fb_business']['pixel_id'],
         $_SESSION['fb_business']['product_catalog_id'],
         $_SESSION['fb_business']['product_set_id'],
-        $_SESSION['fb_business']['page_id']
+        $_SESSION['fb_business']['page_id'],
+        $_SESSION['fb_business']['instagram_actor_id'],
     );
-} catch (\Facebook\Exceptions\FacebookSDKException $e) {
-}
-
-//dd($campaign_id);
+} catch (FacebookSDKException $e) {}
 
 header("Location: " . $_ENV['APP_URL']);

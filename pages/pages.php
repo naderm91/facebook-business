@@ -1,11 +1,14 @@
 <?php
 
-$records = getBusinessOwnedPages(
-    $_ENV['APP_ID'],
-    $_ENV['APP_SECRET'],
-    $_SESSION['fb_business']['access_token'],
-    $_SESSION['fb_business']['business_id']
-);
+try {
+    $records = getBusinessOwnedPages(
+        $_ENV['APP_ID'],
+        $_ENV['APP_SECRET'],
+        $_SESSION['fb_business']['access_token'],
+        $_SESSION['fb_business']['business_id']
+    );
+} catch (\Facebook\Exceptions\FacebookSDKException $e) {}
+
 
 if (count($records) === 1) {
     $_SESSION['fb_business']['page_id'] = $records[0]['id'];
