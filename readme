@@ -1,0 +1,2 @@
+create .env file and add this inputs to run the project:
+APP_URL,APP_ID,APP_SECRET

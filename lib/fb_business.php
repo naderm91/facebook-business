@@ -34,7 +34,8 @@ function scopes()
         'ads_read',
         'business_management',
         'catalog_management',
-        'pages_show_list'
+        'pages_show_list',
+        'pages_read_engagement'
     ];
 }
 
@@ -252,7 +253,7 @@ function createCampaign($app_id, $app_secret, $access_token, $id, $pixel_id, $pr
             'daily_budget' => '15000',
             'campaign_id' => $campaign['id'],
             //'end_time' => '2025-02-20T15:41:30+0000',
-            'targeting' => array(
+                'targeting' => array(
                 //'age_min' => 20,
                 //'age_max' => 24,
                 //'genders' => array(1),
