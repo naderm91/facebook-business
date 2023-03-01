@@ -1,0 +1,18 @@
+{
+   "canvas_product_set":{
+      "max_items": 50,
+      "product_set_id": "1664396597328705",
+      "item_headline": "{{product.name}}",
+      "item_description": "{{product.current_price}}",
+      "image_overlay_spec": {
+         "overlay_template": "pill_with_text",
+         "text_type": "price",
+         "text_font": "dynads_hybrid_bold",
+         "position": "top_left",
+         "theme_color": "background_e50900_text_ffffff",
+         "float_with_margin": true
+      },
+      "retailer_item_ids": [0, 0, 0],
+      "show_in_feed": true
+   }
+}

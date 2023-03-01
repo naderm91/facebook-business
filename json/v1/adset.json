@@ -4,6 +4,7 @@
   "billing_event": "IMPRESSIONS",
   "optimization_goal": "OFFSITE_CONVERSIONS",
   "daily_budget": "15000",
+   "is_dynamic_creative":"true",
   "campaign_id": "23853163014290465",
   "targeting": {
     "geo_locations": {

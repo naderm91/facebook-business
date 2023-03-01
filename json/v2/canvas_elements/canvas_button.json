@@ -1,0 +1,10 @@
+{
+   "canvas_button":{
+   "rich_text": {
+      "plain_text": "See more at www.abc.com."
+   },
+   "open_url_action": {
+      "url": "https://www.abc.com"
+   }
+   }
+}

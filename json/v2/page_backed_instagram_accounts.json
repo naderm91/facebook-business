@@ -1,0 +1,12 @@
+{
+  "name":"Product Catalog Sales Adset" ,
+  "bid_amount":"3000" ,
+  "billing_event":"IMPRESSIONS" ,
+  "optimization_goal":"OFFSITE_CONVERSIONS" ,
+  "daily_budget":"15000" ,
+  "campaign_id":"<CAMPAIGN_ID>" ,
+  "targeting":{ "geo_locations": {"countries":["US"]}},
+"promoted_object":{"product_set_id":"2230612860454164"} ,
+"status":"PAUSED"
+
+}

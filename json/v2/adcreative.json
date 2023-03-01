@@ -1,0 +1,13 @@
+{
+  "name": "Collection Sample Image Creative",
+  "object_story_spec": {
+    "page_id": "112594431752932",
+    "link_data": {
+      "link": "https://fb.com/canvas_doc/1745904352470177",
+      "description": "Description {{product.description}}",
+      "message": "Test {{product.name | titleize}}",
+      "name": "Headline {{product.price}}"
+    }
+  },
+  "object_type": "SHARE"
+}
