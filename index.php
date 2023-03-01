@@ -2,7 +2,6 @@
 
 require "./bootstrap.php";
 
-
 $request = array_merge(
     $_GET,
     (array) json_decode(file_get_contents('php://input'), TRUE),
