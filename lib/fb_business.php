@@ -48,14 +48,12 @@ function scopes()
  */
 function requestAuth($app_id, $redirect_uri)
 {
-    $url = 'https://www.facebook.com/v15.0/dialog/oauth?' .
+    return 'https://www.facebook.com/v15.0/dialog/oauth?' .
         http_build_query(array(
             'client_id' => $app_id,
             'redirect_uri' => $redirect_uri,
             'scope' => implode(',', scopes()),
         ));
-
-    return $url;
 }
 
 function getAccessToken($app_id, $app_secret, $redirect_uri, $code)
