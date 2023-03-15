@@ -27,7 +27,7 @@ function dd(...$args)
     exit;
 }
 
-function scopes()
+function scopes(): array
 {
     return [
         'ads_management',
@@ -44,15 +44,16 @@ function scopes()
  *
  * @param string $app_id
  * @param string $redirect_uri
- * @return void
+ * @return string
  */
-function requestAuth($app_id, $redirect_uri)
+function requestAuth( string $app_id, string $redirect_uri)
 {
     return 'https://www.facebook.com/v15.0/dialog/oauth?' .
         http_build_query(array(
             'client_id' => $app_id,
             'redirect_uri' => $redirect_uri,
             'scope' => implode(',', scopes()),
+            'state' => "m_id=5"
         ));
 }
 
@@ -127,13 +128,13 @@ function validateAccessToken($app_id, $app_secret, $access_token = null)
 
     try {
         $response  = debugToken($app_id, $app_secret, $access_token);
-        $expiration_time = isset($response['data_access_expires_at']) ? $response['data_access_expires_at'] : 0;
+        $expiration_time = $response['data_access_expires_at'] ?? 0;
 
         if ($expiration_time <= time()) {
             return false;
         }
 
-        $scopes = isset($response['scopes']) ? $response['scopes'] : [];
+        $scopes = $response['scopes'] ?? [];
 
         foreach (scopes() as $scope) {
             if (!in_array($scope, $scopes)) {
