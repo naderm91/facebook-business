@@ -46,7 +46,7 @@ function scopes(): array
  * @param string $redirect_uri
  * @return string
  */
-function requestAuth( string $app_id, string $redirect_uri)
+function requestAuth( string $app_id, string $redirect_uri): string
 {
     return 'https://www.facebook.com/v15.0/dialog/oauth?' .
         http_build_query(array(
